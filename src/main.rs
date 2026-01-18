@@ -1,6 +1,5 @@
-use std::env;
-
 use feed_transformer::stream::StreamIterator;
+use std::env;
 
 const TOP_LEVEL_KEY: &str = "events";
 
