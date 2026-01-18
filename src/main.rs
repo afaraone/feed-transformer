@@ -1,16 +1,17 @@
+use std::env;
+
 use feed_transformer::stream::StreamIterator;
 
 const TOP_LEVEL_KEY: &str = "events";
 
+fn parse_file_path() -> Option<String> {
+    let mut args = env::args();
+    args.next();
+    args.next()
+}
+
 fn main() {
-    let stream_iterator = StreamIterator::new("./files/events.json", TOP_LEVEL_KEY).unwrap();
-    println!("counting events!");
-
-    let music_events = stream_iterator.filter(|event| event.as_ref().is_ok_and(|e| e.is_music()));
-
-    for event in music_events {
-        if let Ok(event) = event {
-            println!("event - {:?}", event)
-        }
-    }
+    let file_path = parse_file_path().unwrap();
+    let stream_iterator = StreamIterator::new(&file_path, TOP_LEVEL_KEY).unwrap();
+    println!("{}", stream_iterator.count());
 }
