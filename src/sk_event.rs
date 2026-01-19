@@ -1,21 +1,35 @@
+use chrono::{NaiveDate, NaiveTime};
+
 #[allow(dead_code)]
+#[derive(Debug)]
 pub struct SkEvent {
     id: String,
     title: String,
-    start_date: Date,
-    start_time: Time,
+    start_date: NaiveDate,
+    start_time: NaiveTime,
+    venue: Venue,
 }
 
 #[allow(dead_code)]
-struct Date {
-    year: i32,
-    month: i32,
-    day: i32,
+#[derive(Debug)]
+struct Venue {
+    name: String,
 }
 
-#[allow(dead_code)]
-struct Time {
-    hour: i32,
-    min: i32,
-    sec: i32,
+impl SkEvent {
+    pub fn new(
+        id: String,
+        title: String,
+        start_date: NaiveDate,
+        start_time: NaiveTime,
+        venue_name: String,
+    ) -> Self {
+        SkEvent {
+            id,
+            title,
+            start_date,
+            start_time,
+            venue: Venue { name: venue_name },
+        }
+    }
 }

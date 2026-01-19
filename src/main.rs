@@ -20,5 +20,10 @@ fn main() {
         std::process::exit(1);
     });
 
-    println!("Total music events {}", stream_iterator.count());
+    let count = stream_iterator
+        .flatten()
+        .filter_map(|e| e.try_into_sk_event().ok())
+        .count();
+
+    println!("{} events found!", count);
 }
