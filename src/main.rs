@@ -10,7 +10,15 @@ fn parse_file_path() -> Option<String> {
 }
 
 fn main() {
-    let file_path = parse_file_path().unwrap();
-    let stream_iterator = StreamIterator::new(&file_path, TOP_LEVEL_KEY).unwrap();
-    println!("{}", stream_iterator.count());
+    let file_path = parse_file_path().unwrap_or_else(|| {
+        eprintln!("Please provide a file path!");
+        std::process::exit(1);
+    });
+
+    let stream_iterator = StreamIterator::new(&file_path, TOP_LEVEL_KEY).unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    });
+
+    println!("Total music events {}", stream_iterator.count());
 }

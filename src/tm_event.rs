@@ -1,6 +1,6 @@
 use serde::Deserialize;
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
 pub struct TmEvent {
     pub event_id: Option<String>,
@@ -50,4 +50,14 @@ pub struct Attraction {
     pub classification_sub_type: Option<String>,
 }
 
-// const TM_MUSIC_CLASSIFICATION_ID: &str = "KZFzniwnSyZfZ7v7nJ";
+const TM_MUSIC_CLASSIFICATION_ID: &str = "KZFzniwnSyZfZ7v7nJ";
+
+impl TmEvent {
+    pub fn is_music_event(&self) -> bool {
+        if let Some(classification_segment_id) = &self.classification_segment_id {
+            classification_segment_id == TM_MUSIC_CLASSIFICATION_ID
+        } else {
+            false
+        }
+    }
+}

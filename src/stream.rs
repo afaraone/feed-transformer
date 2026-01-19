@@ -1,16 +1,16 @@
-use crate::event::TmEvent;
-use std::error::Error;
+use crate::tm_event::TmEvent;
 use std::fs::File;
 use std::io::BufReader;
 use struson::json_path;
 use struson::reader::{JsonReader, JsonStreamReader};
+use thiserror::Error;
 
 pub struct StreamIterator {
     stream: JsonStreamReader<BufReader<File>>,
 }
 
 impl Iterator for StreamIterator {
-    type Item = Result<TmEvent, Box<dyn std::error::Error>>;
+    type Item = Result<TmEvent, StreamError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.stream.has_next() {
@@ -28,7 +28,7 @@ impl Iterator for StreamIterator {
 }
 
 impl StreamIterator {
-    pub fn new(file_path: &str, top_level_key: &str) -> Result<Self, Box<dyn Error>> {
+    pub fn new(file_path: &str, top_level_key: &str) -> Result<Self, StreamError> {
         let file = File::open(file_path)?;
         let buffer = BufReader::new(file);
         let mut stream = JsonStreamReader::new(buffer);
@@ -37,4 +37,16 @@ impl StreamIterator {
 
         Ok(StreamIterator { stream })
     }
+}
+
+#[derive(Error, Debug)]
+pub enum StreamError {
+    #[error("Failed to find top-level array in JSON - {0}")]
+    JsonFindArrayError(#[from] struson::reader::ReaderError),
+
+    #[error("Deserialize JSON error - {0}")]
+    JsonDeserializeError(#[from] struson::serde::DeserializerError),
+
+    #[error("IO Error - {0}")]
+    IoError(#[from] std::io::Error),
 }
