@@ -1,8 +1,9 @@
 use crate::tm_event::TmEvent;
 use std::fs::File;
-use std::io::BufReader;
+use std::io::{self, BufReader};
 use struson::json_path;
-use struson::reader::{JsonReader, JsonStreamReader};
+use struson::reader::{self, JsonReader, JsonStreamReader};
+use struson::serde;
 use thiserror::Error;
 
 pub struct StreamIterator {
@@ -42,11 +43,11 @@ impl StreamIterator {
 #[derive(Error, Debug)]
 pub enum StreamError {
     #[error("Failed to find top-level array in JSON - {0}")]
-    JsonFindArrayError(#[from] struson::reader::ReaderError),
+    JsonFindArrayError(#[from] reader::ReaderError),
 
     #[error("Deserialize JSON error - {0}")]
-    JsonDeserializeError(#[from] struson::serde::DeserializerError),
+    JsonDeserializeError(#[from] serde::DeserializerError),
 
     #[error("IO Error - {0}")]
-    IoError(#[from] std::io::Error),
+    IoError(#[from] io::Error),
 }
