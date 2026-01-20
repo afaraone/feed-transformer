@@ -1,11 +1,11 @@
-use feed_transformer::stream::StreamIterator;
+use feed_transformer::stream_iterator::StreamIterator;
 use std::env;
 
 const TOP_LEVEL_KEY: &str = "events";
 
 fn parse_file_path() -> Option<String> {
     let mut args = env::args();
-    args.next();
+    args.next(); // Skip the name of the binary being run
     args.next()
 }
 
