@@ -1,3 +1,4 @@
+use feed_transformer::inventory_writer::InventoryWriter;
 #[cfg(feature = "track-mem")]
 use feed_transformer::performance_metrics::PerformanceMetrics;
 use feed_transformer::stream_iterator::StreamIterator;
@@ -25,12 +26,31 @@ fn main() {
         std::process::exit(1);
     });
 
-    let count = stream_iterator
-        .flatten()
-        .filter_map(|e| e.try_into_sk_event().ok())
-        .count();
+    let mut writer = InventoryWriter::new("output/success.xml").unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    });
 
-    println!("{} events found!", count);
+    writer.start().unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    });
+
+    let songkick_events = stream_iterator
+        .flatten()
+        .filter_map(|e| e.try_into_sk_event().ok());
+
+    for event in songkick_events {
+        writer.add_event(&event).unwrap_or_else(|e| {
+            eprintln!("{e}");
+            std::process::exit(1);
+        });
+    }
+
+    writer.end().unwrap_or_else(|e| {
+        eprintln!("{e}");
+        std::process::exit(1);
+    });
 
     #[cfg(feature = "track-mem")]
     performance_metrics.report();

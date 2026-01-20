@@ -1,7 +1,7 @@
 use chrono::{NaiveDate, NaiveTime};
+use serde::Serialize;
 
-#[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 pub struct SkEvent {
     id: String,
     title: String,
@@ -10,8 +10,7 @@ pub struct SkEvent {
     venue: Venue,
 }
 
-#[allow(dead_code)]
-#[derive(Debug)]
+#[derive(Debug, Serialize)]
 struct Venue {
     name: String,
 }
