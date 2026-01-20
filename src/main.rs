@@ -1,3 +1,5 @@
+#[cfg(feature = "track-mem")]
+use feed_transformer::performance_metrics::PerformanceMetrics;
 use feed_transformer::stream_iterator::StreamIterator;
 use std::env;
 
@@ -10,6 +12,9 @@ fn parse_file_path() -> Option<String> {
 }
 
 fn main() {
+    #[cfg(feature = "track-mem")]
+    let performance_metrics = PerformanceMetrics::start();
+
     let file_path = parse_file_path().unwrap_or_else(|| {
         eprintln!("Please provide a file path!");
         std::process::exit(1);
@@ -26,4 +31,7 @@ fn main() {
         .count();
 
     println!("{} events found!", count);
+
+    #[cfg(feature = "track-mem")]
+    performance_metrics.report();
 }
