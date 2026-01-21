@@ -28,12 +28,14 @@ impl Iterator for StreamIterator {
     }
 }
 
+const TOP_LEVEL_KEY: &str = "events";
+
 impl StreamIterator {
-    pub fn new(file_path: &str, top_level_key: &str) -> Result<Self, StreamError> {
+    pub fn new(file_path: &str) -> Result<Self, StreamError> {
         let file = File::open(file_path)?;
         let buffer = BufReader::new(file);
         let mut stream = JsonStreamReader::new(buffer);
-        stream.seek_to(&json_path![top_level_key])?;
+        stream.seek_to(&json_path![TOP_LEVEL_KEY])?;
         stream.begin_array()?;
 
         Ok(StreamIterator { stream })

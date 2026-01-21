@@ -5,12 +5,10 @@ use feed_transformer::runner_metrics::RunnerMetrics;
 use feed_transformer::stream_iterator::StreamIterator;
 use feed_transformer::{inventory_writer::InventoryWriter, tm_event::TransformError};
 
-const TOP_LEVEL_KEY: &str = "events";
-
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let mut runner_metrics = RunnerMetrics::new();
     let file_path = parse_file_path()?;
-    let stream_iterator = StreamIterator::new(&file_path, TOP_LEVEL_KEY)?;
+    let stream_iterator = StreamIterator::new(&file_path)?;
     let mut writer = InventoryWriter::new("output/success.xml")?;
 
     writer.start()?;
