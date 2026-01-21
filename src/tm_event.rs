@@ -124,6 +124,7 @@ mod tests {
                 venue_name: Some("venue name".to_string()),
                 ..Default::default()
             }),
+            event_status: Some("onsale".to_string()),
             ..Default::default()
         }
     }
