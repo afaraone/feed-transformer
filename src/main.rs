@@ -1,5 +1,6 @@
 #[cfg(feature = "track-mem")]
 use feed_transformer::performance_metrics::PerformanceMetrics;
+use feed_transformer::runner_metrics::RunnerMetrics;
 use feed_transformer::stream_iterator::StreamIterator;
 use feed_transformer::{inventory_writer::InventoryWriter, tm_event::TransformError};
 use std::env;
@@ -36,10 +37,7 @@ fn main() {
         std::process::exit(1);
     });
 
-    let mut accepted_events = 0;
-    let mut invalid_events = 0;
-    let mut ignored_events = 0;
-    let mut unparsed_events = 0;
+    let mut runner_metrics = RunnerMetrics::new();
 
     for event in stream_iterator {
         if let Ok(event) = event {
@@ -49,13 +47,13 @@ fn main() {
                         eprintln!("{e}");
                         std::process::exit(1);
                     });
-                    accepted_events += 1;
+                    runner_metrics.increment_accepted();
                 }
-                Err(TransformError::IgnoredEvent) => ignored_events += 1,
-                Err(TransformError::InvalidEvent(_)) => invalid_events += 1,
+                Err(TransformError::IgnoredEvent) => runner_metrics.increment_ignored(),
+                Err(TransformError::InvalidEvent(_)) => runner_metrics.increment_invalid(),
             }
         } else {
-            unparsed_events += 1;
+            runner_metrics.increment_unparsed();
         }
     }
 
@@ -64,13 +62,7 @@ fn main() {
         std::process::exit(1);
     });
 
-    println!("---------------------------------");
-    println!("Ingestion complete:");
-    println!("Accepted events: {}", accepted_events);
-    println!("Invalid events: {}", invalid_events);
-    println!("Ignored events: {}", ignored_events);
-    println!("Unparsed events: {}", unparsed_events);
-    println!("---------------------------------");
+    println!("{}", runner_metrics);
 
     #[cfg(feature = "track-mem")]
     performance_metrics.report();
