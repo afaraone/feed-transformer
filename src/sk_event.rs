@@ -8,6 +8,19 @@ pub struct SkEvent {
     start_date: NaiveDate,
     start_time: NaiveTime,
     venue: Venue,
+
+    #[serde(rename = "@status")]
+    status: EventStatus,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "lowercase")]
+pub enum EventStatus {
+    Ok,
+    Cancelled,
+    Postponed,
+    Unpublished,
+    Deleted,
 }
 
 #[derive(Debug, Serialize)]
@@ -21,6 +34,7 @@ impl SkEvent {
         title: String,
         start_date: NaiveDate,
         start_time: NaiveTime,
+        status: EventStatus,
         venue_name: String,
     ) -> Self {
         SkEvent {
@@ -28,6 +42,7 @@ impl SkEvent {
             title,
             start_date,
             start_time,
+            status,
             venue: Venue { name: venue_name },
         }
     }

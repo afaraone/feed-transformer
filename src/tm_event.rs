@@ -1,4 +1,4 @@
-use crate::sk_event::SkEvent;
+use crate::sk_event::{EventStatus, SkEvent};
 use chrono::{NaiveDate, NaiveTime};
 use serde::Deserialize;
 use thiserror::Error;
@@ -96,7 +96,16 @@ impl TmEvent {
             .and_then(|v| v.venue_name)
             .ok_or_else(|| TransformError::InvalidEvent("Missing venue_name".into()))?;
 
-        Ok(SkEvent::new(id, title, start_date, start_time, venue_name))
+        let status = match self.event_status.as_deref() {
+            Some("onsale") | Some("offsale") => Ok(EventStatus::Ok),
+            Some("rescheduled") | Some("postponed") => Ok(EventStatus::Postponed),
+            Some("cancelled") => Ok(EventStatus::Cancelled),
+            _ => Err(TransformError::InvalidEvent("Missing venue_name".into())),
+        }?;
+
+        Ok(SkEvent::new(
+            id, title, start_date, start_time, status, venue_name,
+        ))
     }
 }
 
