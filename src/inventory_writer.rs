@@ -45,7 +45,7 @@ impl InventoryWriter {
         Ok(())
     }
 
-    pub fn end(mut self) -> Result<(), WriteError> {
+    pub fn end(&mut self) -> Result<(), WriteError> {
         self.writer
             .write_event(Event::End(BytesEnd::new("events")))?;
 

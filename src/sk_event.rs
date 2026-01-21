@@ -3,14 +3,14 @@ use serde::Serialize;
 
 #[derive(Debug, Serialize)]
 pub struct SkEvent {
-    id: String,
-    title: String,
-    start_date: NaiveDate,
-    start_time: NaiveTime,
-    venue: Venue,
+    pub id: String,
+    pub title: String,
+    pub start_date: NaiveDate,
+    pub start_time: NaiveTime,
+    pub venue: Venue,
 
     #[serde(rename = "@status")]
-    status: EventStatus,
+    pub status: EventStatus,
 }
 
 #[derive(Debug, Serialize)]
@@ -24,8 +24,8 @@ pub enum EventStatus {
 }
 
 #[derive(Debug, Serialize)]
-struct Venue {
-    name: String,
+pub struct Venue {
+    pub name: String,
 }
 
 impl SkEvent {
