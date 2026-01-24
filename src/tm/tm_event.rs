@@ -4,7 +4,7 @@ use serde::Deserialize;
 #[allow(dead_code)]
 #[derive(Deserialize, Debug, Default)]
 #[serde(rename_all = "camelCase")]
-pub struct Event {
+pub struct TmEvent {
     pub event_id: Option<String>,
     pub primary_event_url: Option<String>,
     pub event_name: Option<String>,

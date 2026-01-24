@@ -1,4 +1,4 @@
-use crate::tm;
+use crate::tm::tm_event::TmEvent;
 use std::fs::File;
 use std::io::{self, BufReader};
 use struson::json_path;
@@ -11,11 +11,11 @@ pub struct StreamIterator {
 }
 
 impl Iterator for StreamIterator {
-    type Item = Result<tm::Event, StreamError>;
+    type Item = Result<TmEvent, StreamError>;
 
     fn next(&mut self) -> Option<Self::Item> {
         match self.stream.has_next() {
-            Ok(true) => match self.stream.deserialize_next::<tm::Event>() {
+            Ok(true) => match self.stream.deserialize_next::<TmEvent>() {
                 Ok(event) => Some(Ok(event)),
                 Err(e) => Some(Err(e.into())),
             },

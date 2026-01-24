@@ -1,10 +1,9 @@
 use quick_xml::events::{BytesEnd, BytesStart, Event};
 use quick_xml::writer::Writer as XmlWriter;
+use serde::Serialize;
 use std::fs::File;
 use std::io::{BufWriter, Write};
 use thiserror::Error;
-
-use crate::sk_event::SkEvent;
 
 pub struct InventoryWriter {
     writer: XmlWriter<BufWriter<File>>,
@@ -39,7 +38,7 @@ impl InventoryWriter {
         Ok(())
     }
 
-    pub fn add_event(&mut self, event: &SkEvent) -> Result<(), WriteError> {
+    pub fn add(&mut self, event: &impl Serialize) -> Result<(), WriteError> {
         self.writer.write_serializable("event", event)?;
 
         Ok(())

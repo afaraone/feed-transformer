@@ -3,8 +3,9 @@ use thiserror::Error;
 use crate::{
     inventory_writer::{InventoryWriter, WriteError},
     runner_metrics::RunnerMetrics,
+    sk::{BuildFailure, build_event},
     stream_iterator::StreamIterator,
-    tm,
+    tm::Mapper,
 };
 
 #[derive(Error, Debug)]
@@ -21,17 +22,23 @@ pub fn import(
     writer.start()?;
 
     for tm_event in events {
-        if let Ok(tm_event) = tm_event {
-            match tm::mapper::map(tm_event) {
-                tm::mapper::MapResult::Valid(songkick_event) => {
-                    writer.add_event(&songkick_event)?;
-                    runner_metrics.increment_accepted();
-                }
-                tm::mapper::MapResult::Ignored => runner_metrics.increment_ignored(),
-                tm::mapper::MapResult::Invalid => runner_metrics.increment_invalid(),
-            }
-        } else {
+        let Ok(tm_event) = tm_event else {
             runner_metrics.increment_unparsed();
+            continue;
+        };
+
+        let mapper = Mapper::new(tm_event);
+
+        match build_event(mapper) {
+            Ok(songkick_event) => {
+                writer.add(&songkick_event)?;
+                runner_metrics.increment_accepted();
+            }
+            Err(BuildFailure::Invalid {
+                source: _,
+                errors: _,
+            }) => runner_metrics.increment_invalid(),
+            Err(BuildFailure::Ignored { source: _ }) => runner_metrics.increment_ignored(),
         }
     }
 

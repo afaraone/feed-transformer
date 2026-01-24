@@ -1,53 +1,56 @@
-use crate::{
-    sk_event::{EventStatus, SkEvent},
-    tm::event::Event,
-};
+use crate::sk::EventStatus;
+use crate::tm::TmEvent;
+use chrono::{NaiveDate, NaiveTime};
 
 const TM_MUSIC_CLASSIFICATION_ID: &str = "KZFzniwnSyZfZ7v7nJ";
 
-pub enum MapResult {
-    Valid(SkEvent),
-    Invalid,
-    Ignored,
+pub struct Mapper {
+    event: TmEvent,
 }
 
-fn is_music_event(event: &Event) -> bool {
-    match &event.classification_segment_id {
-        Some(classication_segment_id) => classication_segment_id == TM_MUSIC_CLASSIFICATION_ID,
-        None => false,
-    }
-}
-
-pub fn map(event: Event) -> MapResult {
-    if !is_music_event(&event) {
-        return MapResult::Ignored;
+impl Mapper {
+    pub fn new(event: TmEvent) -> Self {
+        Self { event }
     }
 
-    let id = event.event_id;
-    let title = event.event_name;
-    let start_date = event.event_start_local_date;
-    let start_time = event.event_start_local_time;
-    let venue_name = event.venue.and_then(|v| v.venue_name);
-    let status = match event.event_status.as_deref() {
-        Some("onsale") | Some("offsale") => Some(EventStatus::Ok),
-        Some("rescheduled") | Some("postponed") => Some(EventStatus::Postponed),
-        Some("cancelled") => Some(EventStatus::Cancelled),
-        _ => None,
-    };
+    pub fn should_parse(&self) -> bool {
+        if let Some(classification_segment_id) = &self.event.classification_segment_id {
+            classification_segment_id == TM_MUSIC_CLASSIFICATION_ID
+        } else {
+            false
+        }
+    }
 
-    if let (
-        Some(id),
-        Some(title),
-        Some(start_date),
-        Some(start_time),
-        Some(status),
-        Some(venue_name),
-    ) = (id, title, start_date, start_time, status, venue_name)
-    {
-        MapResult::Valid(SkEvent::new(
-            id, title, start_date, start_time, status, venue_name,
-        ))
-    } else {
-        MapResult::Invalid
+    pub fn source(self) -> TmEvent {
+        self.event
+    }
+
+    pub fn id(&self) -> Option<String> {
+        self.event.event_id.clone()
+    }
+
+    pub fn title(&self) -> Option<String> {
+        self.event.event_name.clone()
+    }
+
+    pub fn start_date(&self) -> Option<NaiveDate> {
+        self.event.event_start_local_date
+    }
+
+    pub fn start_time(&self) -> Option<NaiveTime> {
+        self.event.event_start_local_time
+    }
+
+    pub fn venue_name(&self) -> Option<String> {
+        self.event.venue.as_ref().and_then(|v| v.venue_name.clone())
+    }
+
+    pub fn status(&self) -> Option<EventStatus> {
+        match self.event.event_status.as_deref() {
+            Some("onsale") | Some("offsale") => Some(EventStatus::Ok),
+            Some("rescheduled") | Some("postponed") => Some(EventStatus::Postponed),
+            Some("cancelled") => Some(EventStatus::Cancelled),
+            _ => None,
+        }
     }
 }
