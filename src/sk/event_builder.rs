@@ -1,4 +1,4 @@
-use crate::sk::{ParsedEvent, Venue};
+use crate::sk::{Event, Venue};
 use crate::tm::{Mapper, TmEvent};
 
 pub enum BuildFailure {
@@ -36,7 +36,7 @@ impl ValidationErrors {
     }
 }
 
-pub fn build_event(mapper: Mapper) -> Result<ParsedEvent, BuildFailure> {
+pub fn build_event(mapper: Mapper) -> Result<Event, BuildFailure> {
     if !mapper.should_parse() {
         return Err(BuildFailure::Ignored {
             source: Box::new(mapper.source()),
@@ -59,7 +59,7 @@ pub fn build_event(mapper: Mapper) -> Result<ParsedEvent, BuildFailure> {
         });
     }
 
-    Ok(ParsedEvent {
+    Ok(Event {
         id: id.unwrap(),
         title: title.unwrap(),
         start_date: start_date.unwrap(),

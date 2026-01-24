@@ -1,8 +1,8 @@
 use chrono::{NaiveDate, NaiveTime};
 use serde::Serialize;
 
-#[derive(Debug, Serialize, Default)]
-pub struct ParsedEvent {
+#[derive(Debug, Serialize)]
+pub struct Event {
     pub id: String,
     pub title: String,
     pub start_date: NaiveDate,
@@ -13,10 +13,9 @@ pub struct ParsedEvent {
     pub status: EventStatus,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize)]
 #[serde(rename_all = "lowercase")]
 pub enum EventStatus {
-    #[default]
     Ok,
     Cancelled,
     Postponed,
@@ -24,12 +23,12 @@ pub enum EventStatus {
     Deleted,
 }
 
-#[derive(Debug, Serialize, Default)]
+#[derive(Debug, Serialize)]
 pub struct Venue {
     pub name: String,
 }
 
-impl ParsedEvent {
+impl Event {
     pub fn new(
         id: String,
         title: String,
