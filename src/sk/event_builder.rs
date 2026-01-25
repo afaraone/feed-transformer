@@ -1,14 +1,9 @@
-use crate::sk::{Event, Venue};
-use crate::tm::{Mapper, TmEvent};
+use crate::sk::{Event, IgnoredEvent, InvalidEvent, Venue};
+use crate::tm::Mapper;
 
 pub enum BuildFailure {
-    Invalid {
-        source: Box<TmEvent>,
-        errors: Vec<String>,
-    },
-    Ignored {
-        source: Box<TmEvent>,
-    },
+    Invalid(InvalidEvent),
+    Ignored(IgnoredEvent),
 }
 
 struct ValidationErrors {
@@ -38,9 +33,9 @@ impl ValidationErrors {
 
 pub fn build_event(mapper: Mapper) -> Result<Event, BuildFailure> {
     if !mapper.should_parse() {
-        return Err(BuildFailure::Ignored {
-            source: Box::new(mapper.source()),
-        });
+        let source = mapper.source();
+        let event = IgnoredEvent::new(source);
+        return Err(BuildFailure::Ignored(event));
     }
 
     let mut validation_errors = ValidationErrors::new();
@@ -53,10 +48,9 @@ pub fn build_event(mapper: Mapper) -> Result<Event, BuildFailure> {
     let status = validation_errors.check_required("status", mapper.status());
 
     if let Err(validation_errors) = validation_errors.result() {
-        return Err(BuildFailure::Invalid {
-            source: Box::new(mapper.source()),
-            errors: validation_errors,
-        });
+        let source = mapper.source();
+        let event = InvalidEvent::new(source, validation_errors);
+        return Err(BuildFailure::Invalid(event));
     }
 
     Ok(Event {

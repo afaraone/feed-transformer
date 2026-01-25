@@ -6,6 +6,5 @@ pub struct ParseFileError;
 
 pub fn parse_file_path() -> Result<String, ParseFileError> {
     let mut args = std::env::args();
-    args.next(); // Skip the name of the binary being run
-    args.next().ok_or(ParseFileError)
+    args.nth(1).ok_or(ParseFileError)
 }

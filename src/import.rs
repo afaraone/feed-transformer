@@ -1,12 +1,11 @@
-use thiserror::Error;
-
 use crate::{
-    inventory_writer::{InventoryWriter, WriteError},
     runner_metrics::RunnerMetrics,
     sk::{BuildFailure, build_event},
-    stream_iterator::StreamIterator,
-    tm::Mapper,
+    stream_iterator::StreamError,
+    tm::{Mapper, TmEvent},
+    writer::{WriteError, Writer},
 };
+use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum ImportError {
@@ -15,11 +14,11 @@ pub enum ImportError {
 }
 
 pub fn import(
-    events: StreamIterator,
+    events: impl Iterator<Item = Result<TmEvent, StreamError>>,
     runner_metrics: &mut RunnerMetrics,
-    writer: &mut InventoryWriter,
+    mut inventory_writer: impl Writer,
 ) -> Result<(), ImportError> {
-    writer.start()?;
+    inventory_writer.start()?;
 
     for tm_event in events {
         let Ok(tm_event) = tm_event else {
@@ -31,18 +30,15 @@ pub fn import(
 
         match build_event(mapper) {
             Ok(songkick_event) => {
-                writer.add(&songkick_event)?;
+                inventory_writer.add(&songkick_event)?;
                 runner_metrics.increment_accepted();
             }
-            Err(BuildFailure::Invalid {
-                source: _,
-                errors: _,
-            }) => runner_metrics.increment_invalid(),
-            Err(BuildFailure::Ignored { source: _ }) => runner_metrics.increment_ignored(),
+            Err(BuildFailure::Invalid(_invalid_event)) => runner_metrics.increment_invalid(),
+            Err(BuildFailure::Ignored(_ignored_event)) => runner_metrics.increment_ignored(),
         }
     }
 
-    writer.end()?;
+    inventory_writer.end()?;
 
     Ok(())
 }

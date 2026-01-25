@@ -27,23 +27,3 @@ pub enum EventStatus {
 pub struct Venue {
     pub name: String,
 }
-
-impl Event {
-    pub fn new(
-        id: String,
-        title: String,
-        start_date: NaiveDate,
-        start_time: NaiveTime,
-        status: EventStatus,
-        venue: Venue,
-    ) -> Self {
-        Self {
-            id,
-            title,
-            start_date,
-            start_time,
-            status,
-            venue,
-        }
-    }
-}
